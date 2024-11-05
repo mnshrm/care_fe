@@ -119,12 +119,14 @@ export const FacilityStaffList = (props: any) => {
           />
         </DialogModal>
       )}
-      <Pagination
-        cPage={qParams.page}
-        defaultPerPage={resultsPerPage}
-        data={{ totalCount: doctorsList?.count ?? 0 }}
-        onChange={(page) => updatePage(page)}
-      />
+      {(doctorsList?.count ?? 0) > resultsPerPage && (
+        <Pagination
+          cPage={qParams.page}
+          defaultPerPage={resultsPerPage}
+          data={{ totalCount: doctorsList?.count ?? 0 }}
+          onChange={(page) => updatePage(page)}
+        />
+      )}
     </section>
   );
 };
