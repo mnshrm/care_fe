@@ -22,7 +22,7 @@ import useQuery from "@/Utils/request/useQuery";
 export const FacilityStaffList = (props: any) => {
   const { t } = useTranslation();
   const [doctorCapacityModalOpen, setDoctorCapacityModalOpen] = useState(false);
-  const { qParams, resultsPerPage, updatePage } = useFilters({ limit: 16 });
+  const { qParams, resultsPerPage, updatePage } = useFilters({ limit: 15 });
   const [totalDoctors, setTotalDoctors] = useState(0);
 
   const { data: doctorsList, refetch } = useQuery(routes.listDoctor, {
