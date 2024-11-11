@@ -33,7 +33,13 @@ export const FacilityStaffList = (props: any) => {
     },
     onResponse: ({ res, data }) => {
       if (res?.ok && data) {
-        setTotalDoctors(data.count);
+        let totalCount = 0;
+        data.results.map((doctor: DoctorModal) => {
+          if (doctor.count) {
+            totalCount += doctor.count;
+          }
+        });
+        setTotalDoctors(totalCount);
       }
     },
   });
