@@ -16,9 +16,13 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const release = context.payload.release;
-            console.log(release);
-            core.setOutput('tag_name', release);
+            const response = await github.rest.repos.getLatestRelease({
+              owner: 'ohcnetwork',
+              repo: 'care_fe'
+            });
+            const tagName = response.data.tag_name;
+            console.log(`Latest release tag: ${tagName}`);
+            core.setOutput('latest_tag', tagName);
       - name: Get Merged PRs
         id: get-prs
         uses: actions/github-script@v6
