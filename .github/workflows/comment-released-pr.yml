@@ -17,6 +17,7 @@ jobs:
         with:
           script: |
             const release = context.payload.release;
+            console.log(release.tag_name);
             core.setOutput('tag_name', release.tag_name);
       - name: Get Merged PRs
         id: get-prs
