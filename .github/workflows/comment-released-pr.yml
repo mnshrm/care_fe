@@ -1,8 +1,10 @@
 name: Comment on PRs associated with latest release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [issues/8176/tag-release-related-to-pr]
+#   release:
+#     types: [published]
 
 jobs:
   comment-on-prs:
@@ -24,8 +26,8 @@ jobs:
             const tagName = core.getInput('tag_name');
             const listPullRequestsAssociatedWithRelease = async (tagName) => {
               const response = await github.rest.pulls.list({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: `ohcnetwork`,
+                repo: `care_fe`,
                 state: 'closed',
                 base: tagName
               });
@@ -39,10 +41,10 @@ jobs:
           script: |
             const prs = JSON.parse(core.getInput('prs'));
             prs.forEach(pr => {
-              github.rest.issues.createComment({
+              console.log({
                 issue_number: pr.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: `ohcnetwork`,
+                repo: `care_fe`,
                 body: `This PR was merged into the **${core.getInput('tag_name')}** release.`
-              });
+              })
             });
