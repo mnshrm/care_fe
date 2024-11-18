@@ -1,0 +1,48 @@
+name: Comment on PRs associated with latest release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  comment-on-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get Release Information
+        id: get-release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const release = context.payload.release;
+            core.setOutput('tag_name', release.tag_name);
+      - name: Get Merged PRs
+        id: get-prs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tagName = core.getInput('tag_name');
+            const listPullRequestsAssociatedWithRelease = async (tagName) => {
+              const response = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'closed',
+                base: tagName
+              });
+              return response.data;
+            };
+            const prs = await listPullRequestsAssociatedWithRelease(tagName);
+            core.setOutput('prs', JSON.stringify(prs));
+      - name: Comment on PRs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prs = JSON.parse(core.getInput('prs'));
+            prs.forEach(pr => {
+              github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `This PR was merged into the **${core.getInput('tag_name')}** release.`
+              });
+            });
