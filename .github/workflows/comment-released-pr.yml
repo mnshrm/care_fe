@@ -39,6 +39,7 @@ jobs:
               return response.data;
             };
             const prs = await listPullRequestsAssociatedWithRelease(tagName);
+            console.log(prs)
             core.setOutput('prs', JSON.stringify(prs));
       - name: Comment on PRs
         uses: actions/github-script@v6
