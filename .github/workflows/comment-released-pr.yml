@@ -1,51 +1,71 @@
-name: Comment on PRs associated with latest release
+name: Comment on PRs for Latest Release
 
 on:
-  push:
-    branches: [issues/8176/tag-release-related-to-pr]
-#   release:
-#     types: [published]
+  release:
+    types: [published]
 
 jobs:
   comment-on-prs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Get Release Information
-        id: get-release
+
+      - name: Get Latest and Previous Releases
         uses: actions/github-script@v6
         with:
           script: |
-            const response = await github.rest.repos.getLatestRelease({
-              owner: 'ohcnetwork',
-              repo: 'care_fe'
-            });
-            const tagName = response.data.tag_name;
-            console.log(`Latest release tag: ${tagName}`);
-            core.setOutput('latest_tag', tagName);
-      - name: Get Merged PRs
-        id: get-prs
+            const latestRelease = context.payload.release;
+            return context.octokit.rest.repos.listReleases({
+              owner: `ohcnetwork`,
+              repo: `care_fe`,
+              per_page: 2,
+              page: 1
+            }).then(response => ({latestRelease: response.data[0], previousRelease: response.data[1]}));
+
+      - name: Get Commits Between Releases
         uses: actions/github-script@v6
         with:
           script: |
-            const tagName = core.getInput('tag_name');
-            const commits = await github.rest.repos.listCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                sha: tagName
-              });
-            # const prs = await listPullRequestsAssociatedWithRelease(tagName);
-            console.log(commits)
+            const { latestRelease, previousRelease } = steps.Get_Latest_and_Previous_Releases.outputs;
+
+            const commitsBetween = context.octokit.rest.repos.compareCommits({
+              owner: `ohcnetwork`,
+              repo: `care_fe`,
+              base: previousRelease.tag_name,
+              head: latestRelease.tag_name
+            }).then(response => response.data.commits);
+            console.log(commitsBetween);
+            return { commitsBetween };
+
+      - name: Get PRs for Commits
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { commitsBetween } = steps.Get_Commits_Between_Releases.outputs;
+
+            const prs = [];
+            for (const commit of commitsBetween) {
+              const pr = context.octokit.rest.search.issuesAndPullRequests({
+                q: `is:pr is:merged ${commit.sha}`
+              }).then(response => response.data.items[0]);
+              prs.push(pr);
+            }
+
+            return { prs };
+
       - name: Comment on PRs
         uses: actions/github-script@v6
         with:
           script: |
-            const prs = JSON.parse(core.getInput('prs'));
-            prs.forEach(pr => {
-              console.log({
+            const { prs } = steps.Get_PRs_for_Commits.outputs;
+
+            const latestReleaseTagName = context.payload.release.tag_name;
+
+            for (const pr of prs) {
+              context.octokit.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 issue_number: pr.number,
-                owner: `ohcnetwork`,
-                repo: `care_fe`,
-                body: `This PR was merged into the **${core.getInput('tag_name')}** release.`
-              })
-            });
+                body: `This PR was merged into the latest release: **${latestReleaseTagName}**`
+              });
+            }
