@@ -29,18 +29,13 @@ jobs:
         with:
           script: |
             const tagName = core.getInput('tag_name');
-            const listPullRequestsAssociatedWithRelease = async (tagName) => {
-              const response = await fetch(`https://github.com/ohcnetwork/care_fe/releases/tag/v24.47.0`);
-              const domText = await response.text();
-              console.log(response)
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(domText, 'text/html');
-              console.log(doc);
-              return response.data;
-            };
-            const prs = await listPullRequestsAssociatedWithRelease(tagName);
-            console.log(prs)
-            core.setOutput('prs', JSON.stringify(prs));
+            const commits = await github.rest.repos.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha: tagName
+              });
+            # const prs = await listPullRequestsAssociatedWithRelease(tagName);
+            console.log(commits)
       - name: Comment on PRs
         uses: actions/github-script@v6
         with:
