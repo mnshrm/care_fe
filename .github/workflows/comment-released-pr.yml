@@ -14,12 +14,23 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            return context.octokit.rest.repos.listReleases({
-              owner: `ohcnetwork`,
-              repo: `care_fe`,
-              per_page: 2,
-              page: 1
-            }).then(response => ({latestRelease: response.data[0], previousRelease: response.data[1]}));
+            async function getReleases() {
+            const url = `https://api.github.com/repos/ohcnetwork/care_fe/releases?per_page=2`;
+            const token = `${{ secrets.GITHUB_TOKEN }}`;
+
+            const response = await fetch(url, {
+              headers: {
+                Authorization: `token ${token}`,
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to fetch releases: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return { latestRelease: data[0], previousRelease: data[1] };
+            }
 
       - name: Get Commits Between Releases
         uses: actions/github-script@v6
