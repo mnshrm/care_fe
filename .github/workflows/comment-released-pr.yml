@@ -16,7 +16,7 @@ jobs:
           script: |
             async function getReleases() {
             const url = `https://api.github.com/repos/ohcnetwork/care_fe/releases?per_page=2`;
-            const token = `${{ secrets.GITHUB_TOKEN }}`;
+            const token = `${{ secrets.TOKEN }}`;
 
             const response = await fetch(url, {
               headers: {
