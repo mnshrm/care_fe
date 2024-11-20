@@ -1,8 +1,8 @@
 name: Comment on PRs for Latest Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [issues/8176/tag-release-related-to-pr]
 
 jobs:
   comment-on-prs:
