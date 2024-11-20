@@ -14,7 +14,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const latestRelease = context.payload.release;
             return context.octokit.rest.repos.listReleases({
               owner: `ohcnetwork`,
               repo: `care_fe`,
