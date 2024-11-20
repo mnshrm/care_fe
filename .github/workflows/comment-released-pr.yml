@@ -31,6 +31,7 @@ jobs:
             const data = await response.json();
             return { latestRelease: data[0], previousRelease: data[1] };
             }
+            return await getReleases();
 
       - name: Get Commits Between Releases
         uses: actions/github-script@v6
